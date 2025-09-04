@@ -1,0 +1,655 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>WR Advanced Analytics — Simple, Responsive, Comprehensive</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  /* Theme tokens */
+  :root{
+    --bg:#0e1220; --card:#14182c; --muted:#a1a7c9; --text:#eef1ff;
+    --accent:#79a6ff; --accent-2:#53e07a; --accent-3:#ffb86b;
+    --grid:#24294a; --border:#262b4b; --shadow:0 12px 40px rgba(0,0,0,0.28);
+    --ok:#2dd4bf; --warn:#fbbf24; --bad:#f87171; --focus:#9aa7ff;
+  }
+  body.light{
+    --bg:#f6f7fb; --card:#ffffff; --muted:#5d647a; --text:#0f1320;
+    --accent:#2f62ff; --accent-2:#1a9b5a; --accent-3:#f08a24;
+    --grid:#e8eaf6; --border:#dfe3f5; --shadow:0 8px 30px rgba(0,0,0,0.08);
+    --ok:#0c9; --warn:#d29000; --bad:#cc3b3b; --focus:#2f62ff;
+  }
+
+  /* Base */
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font:15px/1.55 system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, "Noto Color Emoji";
+    -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+  }
+  header{
+    padding:18px 16px; border-bottom:1px solid var(--border);
+    background:linear-gradient(180deg, color-mix(in oklab, var(--card) 86%, black 12%), var(--bg));
+    position:sticky; top:0; z-index:20;
+  }
+  h1{margin:0 0 6px; font-weight:800; font-size:22px; letter-spacing:0.2px}
+  .sub{color:var(--muted); font-size:13px}
+  .container{max-width:1200px; margin:16px auto 32px; padding:0 16px}
+
+  /* Actions row */
+  .actions{
+    display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:10px;
+  }
+  .btn{
+    display:inline-flex; align-items:center; gap:8px; padding:10px 12px; border-radius:12px;
+    border:1px solid var(--border); background:var(--card); color:var(--text);
+    cursor:pointer; box-shadow:var(--shadow); font-weight:600; user-select:none;
+  }
+  .btn:focus-visible{outline:3px solid var(--focus); outline-offset:2px}
+  .btn.primary{background:linear-gradient(180deg, color-mix(in oklab, var(--accent) 25%, transparent 75%), var(--card)); border-color:color-mix(in oklab, var(--accent) 25%, var(--border));}
+  .btn.icon{padding:10px}
+
+  /* KPI / helper */
+  .kpi{display:flex; gap:10px; flex-wrap:wrap; margin:12px 0}
+  .pill{
+    background:var(--card); border:1px solid var(--border); padding:8px 10px; border-radius:12px;
+    box-shadow:var(--shadow)
+  }
+  .tips{
+    background:var(--card); border:1px solid var(--border); border-radius:12px; padding:10px 12px;
+    display:flex; gap:10px; flex-wrap:wrap; margin-top:12px
+  }
+  .chip{display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; border:1px solid var(--border); background:color-mix(in srgb, var(--card) 92%, var(--accent) 8%); cursor:pointer; user-select:none}
+  .chip:focus-visible{outline:3px solid var(--focus); outline-offset:2px}
+  .chip[data-active="true"]{background:color-mix(in srgb, var(--card) 82%, var(--accent) 18%);}
+
+  /* Controls */
+  .controls{
+    display:grid; grid-template-columns:1.4fr 0.8fr 1fr 0.9fr 0.8fr auto; gap:10px; margin:14px 0 12px
+  }
+  .ctrl{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:10px; box-shadow:var(--shadow)}
+  label{display:block; color:color-mix(in srgb, var(--muted) 70%, var(--text) 30%); font-size:12px; margin-bottom:6px; font-weight:800; letter-spacing:0.2px}
+  input[type="text"], select, input[type="range"]{width:100%}
+  input[type="text"], select{
+    padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:color-mix(in srgb, var(--bg) 60%, var(--card) 40%); color:var(--text); outline:none
+  }
+  input::placeholder{color:color-mix(in oklab, var(--muted) 85%, var(--text) 15%)}
+  .ctrl-inline{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+
+  /* Layout cards */
+  .row{display:grid; grid-template-columns:1.4fr 1fr; gap:12px}
+  .card{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px; box-shadow:var(--shadow)}
+  .card h3{margin:0 0 8px; font-size:15px; font-weight:800; color:color-mix(in srgb, var(--text) 85%, var(--muted) 15%)}
+  .foot{margin-top:6px; color:var(--muted); font-size:12px}
+
+  /* Table */
+  .tableWrap{overflow:auto; border:1px solid var(--border); border-radius:12px; max-height:58vh}
+  table{width:100%; border-collapse:separate; border-spacing:0; min-width:760px}
+  thead th{
+    position:sticky; top:0; background:linear-gradient(180deg, color-mix(in oklab, var(--card) 92%, var(--bg) 8%), var(--card));
+    border-bottom:1px solid var(--border); padding:10px 8px; color:color-mix(in srgb, var(--text) 86%, var(--muted) 14%); font-weight:800; font-size:12px; cursor:pointer; white-space:nowrap;
+    z-index:1
+  }
+  thead th.is-active {background: color-mix(in srgb, var(--accent) 14%, var(--card) 86%);}
+  thead th.is-active.asc::after {content:" ▲";}
+  thead th.is-active.desc::after {content:" ▼";}
+  tbody td{padding:10px 8px; border-bottom:1px dashed var(--grid); font-variant-numeric:tabular-nums}
+  tbody tr:hover{background:color-mix(in srgb, var(--card) 86%, var(--accent) 14%)}
+  .num{text-align:right}
+  .stickyFirst thead th:first-child, .stickyFirst tbody td:first-child{position:sticky; left:0; background:inherit; z-index:2}
+  .empty{padding:16px; text-align:center; color:var(--muted)}
+
+  /* Tooltip */
+  #tip{
+    position:fixed; pointer-events:none; z-index:50; transform:translate(-50%, -120%);
+    background:color-mix(in oklab, var(--bg) 70%, black 30%); color:var(--text); border:1px solid var(--border); border-radius:8px; padding:8px 10px;
+    box-shadow:var(--shadow); font-size:12px; line-height:1.25; min-width:160px; display:none
+  }
+
+  /* Accessibility: focus rings + reduced motion */
+  :focus-visible{outline:3px solid var(--focus); outline-offset:2px}
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important; scroll-behavior:auto !important}
+  }
+
+  /* Responsive adjustments */
+  @media (max-width:1100px){
+    .row{grid-template-columns:1fr}
+    .controls{grid-template-columns:1fr 1fr 1fr}
+    table{min-width:640px}
+  }
+  @media (max-width:700px){
+    .controls{grid-template-columns:1fr}
+    .actions{gap:6px}
+    .btn{padding:9px 10px}
+    h1{font-size:20px}
+    body{font-size:14px}
+    table{min-width:580px}
+  }
+</style>
+</head>
+<body>
+  <header>
+    <h1>WR advanced analytics — turned simple</h1>
+    <div class="sub">Simple visuals that just work: Target Share vs YPRR and a Top YPRR board.</div>
+    <div class="actions" role="toolbar" aria-label="Quick actions">
+      <button id="themeToggle" class="btn icon" aria-pressed="false" title="Toggle light/dark theme">🌗 Theme</button>
+      <button id="reset" class="btn" title="Reset all filters">↺ Reset</button>
+      <button id="exportCsv" class="btn primary" title="Export current view as CSV">⬇ Export CSV</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="kpi" aria-live="polite">
+      <div class="pill"><b>Total players:</b> <span id="kpiPlayers">0</span></div>
+      <div class="pill"><b>Median YPRR:</b> <span id="kpiYprr">–</span></div>
+      <div class="pill"><b>Median EPA/Tgt:</b> <span id="kpiEpa">–</span></div>
+      <div class="pill"><b>Routes filter:</b> <span id="kpiRoutes">≥ 0</span></div>
+    </div>
+
+    <div class="tips" role="group" aria-label="Quick filters">
+      <span class="chip" data-filter="volume" tabindex="0" title="Show high volume WRs (300+ routes)">📈 Volume 300+ routes</span>
+      <span class="chip" data-filter="deep" tabindex="0" title="Highlight deep threats (aDOT ≥ 12)">🎯 Deep threats (aDOT ≥ 12)</span>
+      <span class="chip" data-filter="efficient" tabindex="0" title="Highlight high efficiency (YPRR ≥ 2.5)">⚡ Efficient (YPRR ≥ 2.5)</span>
+      <span class="chip" data-filter="clear" tabindex="0" title="Clear quick filters">🧹 Clear</span>
+    </div>
+
+    <div class="controls" role="region" aria-label="Filters and sorting">
+      <div class="ctrl">
+        <label for="q">Search player</label>
+        <input id="q" type="text" placeholder="Chase, Jefferson, Nabers …" inputmode="search" autocomplete="off" />
+      </div>
+      <div class="ctrl">
+        <label for="minRoutes">Min routes</label>
+        <input id="minRoutes" type="range" min="0" max="800" step="10" value="200" />
+        <div class="foot"><span id="minRoutesVal">200</span></div>
+      </div>
+      <div class="ctrl">
+        <label for="sortBy">Sort by</label>
+        <select id="sortBy"></select>
+      </div>
+      <div class="ctrl">
+        <label for="sortDir">Order</label>
+        <select id="sortDir">
+          <option value="desc" selected>Descending</option>
+          <option value="asc">Ascending</option>
+        </select>
+      </div>
+      <div class="ctrl">
+        <label for="barN">Bar: Top N</label>
+        <select id="barN"><option>10</option><option selected>20</option><option>30</option><option>40</option></select>
+      </div>
+      <div class="ctrl ctrl-inline" aria-label="Helpful notes">
+        <span class="foot">Tip: Start with search or drag the routes filter. Table is always sortable.</span>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="card">
+        <h3>Target share vs YPRR (size = targets, color = EPA/target)</h3>
+        <div class="foot" style="margin-bottom:6px">X = Target Share (role). Y = Yards per Route Run (efficiency). Bigger and greener = more volume and impact.</div>
+        <svg id="scatter" role="img" aria-label="Scatter plot of target share vs YPRR" style="width:100%;height:360px;display:block"></svg>
+      </div>
+      <div class="card">
+        <h3>Top YPRR leaderboard</h3>
+        <svg id="bar" role="img" aria-label="Top YPRR bar chart" style="width:100%;height:360px;display:block"></svg>
+        <div class="foot">Sorted by YPRR among visible players (after filters).</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h3>Players table</h3>
+      <div class="foot">Click a column to sort. Search and routes filters apply here and to charts.</div>
+      <div class="tableWrap stickyFirst">
+        <table id="tbl" aria-label="Players metrics">
+          <thead><tr id="tblHead"></tr></thead>
+          <tbody id="tblBody"></tbody>
+        </table>
+      </div>
+      <div id="emptyState" class="empty" hidden>No players match your filters. Try lowering Min routes or clearing quick filters.</div>
+    </div>
+
+    <div class="foot" style="margin-top:10px">
+      Metrics: YPRR (yards/route), EPA/Target (impact), Target Share (role), aDOT (depth), RACR (conversion), Y/Tgt (efficiency).
+    </div>
+  </div>
+
+  <div id="tip" role="status" aria-live="polite"></div>
+
+<script>
+;(()=>{'use strict';
+
+  // ========= Data =========
+  const RAW = [
+    {player:"Ja'Marr Chase", routes:681, receptions:127, yards:1708, tds:17, yac:787, adot:8.72, targetShare:0.2787, catchRate:0.7257, epaPerTarget:0.26, yprr:2.51},
+    {player:"Justin Jefferson", routes:570, receptions:103, yards:1533, tds:10, yac:487, adot:10.27, targetShare:0.2979, catchRate:0.6688, epaPerTarget:0.27, yprr:2.69},
+    {player:"Brian Thomas", routes:479, receptions:87, yards:1282, tds:10, yac:562, adot:10.98, targetShare:0.2548, catchRate:0.6541, epaPerTarget:0.28, yprr:2.68},
+    {player:"Drake London", routes:508, receptions:100, yards:1271, tds:9, yac:327, adot:10.91, targetShare:0.2931, catchRate:0.6329, epaPerTarget:0.31, yprr:2.50},
+    {player:"Amon-Ra St. Brown", routes:515, receptions:115, yards:1263, tds:12, yac:412, adot:7.67, targetShare:0.2701, catchRate:0.8156, epaPerTarget:0.27, yprr:2.45},
+    {player:"Malik Nabers", routes:522, receptions:109, yards:1204, tds:7, yac:462, adot:9.52, targetShare:0.3491, catchRate:0.6412, epaPerTarget:0.33, yprr:2.31},
+    {player:"CeeDee Lamb", routes:504, receptions:101, yards:1194, tds:6, yac:537, adot:7.83, targetShare:0.2714, catchRate:0.6645, epaPerTarget:0.30, yprr:2.37},
+    {player:"Ladd McConkey", routes:424, receptions:82, yards:1149, tds:7, yac:390, adot:9.95, targetShare:0.2424, catchRate:0.7321, epaPerTarget:0.26, yprr:2.71},
+    {player:"Jaxon Smith-Njigba", routes:598, receptions:100, yards:1130, tds:6, yac:477, adot:6.96, targetShare:0.2408, catchRate:0.7299, epaPerTarget:0.23, yprr:1.89},
+    {player:"Garrett Wilson", routes:627, receptions:101, yards:1104, tds:7, yac:442, adot:8.95, targetShare:0.2615, catchRate:0.6558, epaPerTarget:0.25, yprr:1.76},
+    {player:"Terry McLaurin", routes:458, receptions:82, yards:1096, tds:13, yac:292, adot:13.34, targetShare:0.2321, catchRate:0.7009, epaPerTarget:0.26, yprr:2.39},
+    {player:"Courtland Sutton", routes:517, receptions:81, yards:1081, tds:8, yac:179, adot:12.03, targetShare:0.2459, catchRate:0.6000, epaPerTarget:0.26, yprr:2.09},
+    {player:"A.J. Brown", routes:313, receptions:67, yards:1079, tds:7, yac:353, adot:12.04, targetShare:0.3428, catchRate:0.6907, epaPerTarget:0.31, yprr:3.45},
+    {player:"Davante Adams", routes:496, receptions:85, yards:1063, tds:8, yac:473, adot:8.28, targetShare:0.2950, catchRate:0.6028, epaPerTarget:0.28, yprr:2.14},
+    {player:"Zay Flowers", routes:417, receptions:74, yards:1059, tds:4, yac:463, adot:10.41, targetShare:0.2538, catchRate:0.6379, epaPerTarget:0.28, yprr:2.54},
+    {player:"Jakobi Meyers", routes:547, receptions:87, yards:1027, tds:4, yac:293, adot:9.93, targetShare:0.2481, catchRate:0.6744, epaPerTarget:0.24, yprr:1.88},
+    {player:"Nico Collins", routes:328, receptions:68, yards:1006, tds:7, yac:365, adot:10.94, targetShare:0.2475, catchRate:0.6869, epaPerTarget:0.30, yprr:3.07},
+    {player:"Mike Evans", routes:382, receptions:74, yards:1004, tds:11, yac:226, adot:11.58, targetShare:0.2407, catchRate:0.6727, epaPerTarget:0.29, yprr:2.63},
+    {player:"Jameson Williams", routes:449, receptions:58, yards:1001, tds:7, yac:497, adot:11.40, targetShare:0.1880, catchRate:0.6374, epaPerTarget:0.20, yprr:2.23},
+    {player:"DK Metcalf", routes:527, receptions:66, yards:992, tds:5, yac:263, adot:13.23, targetShare:0.2126, catchRate:0.6111, epaPerTarget:0.20, yprr:1.88},
+    {player:"Puka Nacua", routes:274, receptions:79, yards:990, tds:3, yac:518, adot:7.25, targetShare:0.2986, catchRate:0.7453, epaPerTarget:0.39, yprr:3.61},
+    {player:"Jauan Jennings", routes:372, receptions:77, yards:975, tds:6, yac:212, adot:9.90, targetShare:0.2473, catchRate:0.6814, epaPerTarget:0.30, yprr:2.62},
+    {player:"Tyreek Hill", routes:484, receptions:81, yards:959, tds:6, yac:292, adot:11.13, targetShare:0.2165, catchRate:0.6585, epaPerTarget:0.25, yprr:1.98},
+    {player:"Tee Higgins", routes:428, receptions:73, yards:911, tds:10, yac:228, adot:9.79, targetShare:0.2489, catchRate:0.6697, epaPerTarget:0.25, yprr:2.13},
+    {player:"George Pickens", routes:395, receptions:59, yards:900, tds:3, yac:215, adot:13.70, targetShare:0.2648, catchRate:0.5728, epaPerTarget:0.26, yprr:2.28},
+    {player:"Marvin Harrison", routes:495, receptions:62, yards:885, tds:8, yac:148, adot:13.50, targetShare:0.2218, catchRate:0.5345, epaPerTarget:0.23, yprr:1.79},
+    {player:"Jordan Addison", routes:470, receptions:63, yards:875, tds:9, yac:213, adot:12.10, targetShare:0.2115, catchRate:0.6364, epaPerTarget:0.21, yprr:1.86},
+    {player:"Jayden Reed", routes:353, receptions:55, yards:857, tds:6, yac:380, adot:7.85, targetShare:0.1616, catchRate:0.7333, epaPerTarget:0.21, yprr:2.43},
+    {player:"DeVonta Smith", routes:339, receptions:68, yards:833, tds:8, yac:299, adot:9.09, targetShare:0.2853, catchRate:0.7640, epaPerTarget:0.26, yprr:2.46},
+    {player:"Alec Pierce", routes:422, receptions:37, yards:824, tds:7, yac:118, adot:21.65, targetShare:0.1435, catchRate:0.5362, epaPerTarget:0.16, yprr:1.95},
+    {player:"Khalil Shakir", routes:334, receptions:76, yards:821, tds:4, yac:597, adot:5.48, targetShare:0.2146, catchRate:0.7600, epaPerTarget:0.30, yprr:2.46},
+    {player:"Michael Pittman", routes:453, receptions:69, yards:808, tds:3, yac:259, adot:11.12, targetShare:0.2429, catchRate:0.6216, epaPerTarget:0.25, yprr:1.78},
+    {player:"Josh Downs", routes:345, receptions:72, yards:803, tds:5, yac:393, adot:6.86, targetShare:0.2560, catchRate:0.6729, epaPerTarget:0.31, yprr:2.33},
+    {player:"Keenan Allen", routes:452, receptions:70, yards:744, tds:7, yac:240, adot:9.21, targetShare:0.2725, catchRate:0.5785, epaPerTarget:0.27, yprr:1.65},
+    {player:"Jaylen Waddle", routes:429, receptions:58, yards:744, tds:2, yac:236, adot:9.96, targetShare:0.1618, catchRate:0.6988, epaPerTarget:0.19, yprr:1.73},
+    {player:"Rome Odunze", routes:511, receptions:54, yards:734, tds:3, yac:246, adot:13.84, targetShare:0.1920, catchRate:0.5347, epaPerTarget:0.20, yprr:1.44},
+    {player:"Quentin Johnston", routes:348, receptions:55, yards:711, tds:8, yac:306, adot:10.84, targetShare:0.2146, catchRate:0.6044, epaPerTarget:0.26, yprr:2.04},
+    {player:"Cooper Kupp", routes:343, receptions:67, yards:710, tds:6, yac:269, adot:6.80, targetShare:0.2618, catchRate:0.6700, epaPerTarget:0.29, yprr:2.07}
+  ];
+
+  // Derive metrics
+  function derive(raw){
+    return raw.map(r=>{
+      const targets = Math.max(1, Math.round(r.receptions / Math.max(0.01, r.catchRate)));
+      const airYards = r.adot * targets;
+      const ypt = r.yards / targets;
+      const racr = airYards>0 ? r.yards/airYards : null;
+      return {...r, targets, airYards, ypt:+ypt.toFixed(3), racr:racr==null?null:+racr.toFixed(3)};
+    });
+  }
+  const DATA = derive(RAW);
+
+  // Config
+  const METRICS = [
+    {k:'player', n:'Player', fmt:v=>v},
+    {k:'routes', n:'Routes', fmt:v=>v.toLocaleString()},
+    {k:'targets', n:'Targets', fmt:v=>v.toLocaleString()},
+    {k:'receptions', n:'Receptions', fmt:v=>v.toLocaleString()},
+    {k:'yards', n:'Yards', fmt:v=>v.toLocaleString()},
+    {k:'tds', n:'TDs', fmt:v=>v.toLocaleString()},
+    {k:'yac', n:'YAC', fmt:v=>v.toLocaleString()},
+    {k:'adot', n:'aDOT', fmt:v=>v.toFixed(2)},
+    {k:'catchRate', n:'Catch Rate %', fmt:v=>(v*100).toFixed(1)+'%'},
+    {k:'targetShare', n:'Target Share %', fmt:v=>(v*100).toFixed(1)+'%'},
+    {k:'epaPerTarget', n:'EPA/Target', fmt:v=>v.toFixed(2)},
+    {k:'yprr', n:'YPRR', fmt:v=>v.toFixed(2)},
+    {k:'ypt', n:'Yards/Target', fmt:v=>v.toFixed(2)},
+    {k:'racr', n:'RACR', fmt:v=>v==null?'—':v.toFixed(2)},
+    {k:'airYards', n:'Air Yards', fmt:v=>Math.round(v).toLocaleString()}
+  ];
+  const KEY2 = Object.fromEntries(METRICS.map(m=>[m.k,m]));
+  const TABLE_COLS = ['player','routes','targets','receptions','yards','tds','yac','adot','catchRate','targetShare','epaPerTarget','yprr','ypt','racr','airYards'];
+  const SORTABLE = ['yprr','epaPerTarget','targetShare','adot','ypt','routes','targets','yards','tds','catchRate','airYards'];
+
+  // State
+  const state = {
+    q:'',
+    minRoutes:200,
+    sortBy:'yprr',
+    sortDir:'desc',
+    barN:20,
+    quick:{volume:false, deep:false, efficient:false}
+  };
+
+  // DOM helpers
+  const $ = s => document.querySelector(s);
+  const $$ = s => Array.from(document.querySelectorAll(s));
+  function median(arr){ if(!arr.length) return 0; const s=[...arr].sort((a,b)=>a-b); const m=s.length>>1; return s.length%2? s[m] : (s[m-1]+s[m])/2; }
+  function fmt(k,v){ return KEY2[k]?.fmt ? KEY2[k].fmt(v) : (typeof v==='number'? v.toLocaleString(): v); }
+  function debounced(fn, ms=200){ let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), ms); }; }
+
+  // Initialize controls
+  function initControls(){
+    $('#sortBy').innerHTML = SORTABLE.map(k=>`<option value="${k}">${KEY2[k].n}</option>`).join('');
+    $('#sortBy').value = state.sortBy;
+    $('#minRoutesVal').textContent = state.minRoutes;
+    $('#kpiRoutes').textContent = `≥ ${state.minRoutes}`;
+
+    const onSearch = debounced(e=>{ state.q=e.target.value.toLowerCase(); renderAll(); }, 120);
+    $('#q').addEventListener('input', onSearch);
+    $('#minRoutes').addEventListener('input', e=>{
+      state.minRoutes = +e.target.value;
+      $('#minRoutesVal').textContent = e.target.value;
+      $('#kpiRoutes').textContent = `≥ ${e.target.value}`;
+      renderAll();
+    });
+    $('#sortBy').addEventListener('change', e=>{ state.sortBy=e.target.value; renderAll(); });
+    $('#sortDir').addEventListener('change', e=>{ state.sortDir=e.target.value; renderAll(); });
+    $('#barN').addEventListener('change', ()=> renderBar());
+
+    // Theme toggle with persistence
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    if(savedTheme==='light'){ document.body.classList.add('light'); $('#themeToggle').setAttribute('aria-pressed','true'); }
+    $('#themeToggle').addEventListener('click', ()=>{
+      const isLight = document.body.classList.toggle('light');
+      localStorage.setItem('theme', isLight ? 'light' : 'dark');
+      $('#themeToggle').setAttribute('aria-pressed', String(isLight));
+      // rerender charts for contrast
+      renderScatter(); renderBar();
+    });
+
+    // Reset
+    $('#reset').addEventListener('click', ()=>{
+      state.q=''; $('#q').value='';
+      state.minRoutes=200; $('#minRoutes').value=200; $('#minRoutesVal').textContent='200'; $('#kpiRoutes').textContent='≥ 200';
+      state.sortBy='yprr'; $('#sortBy').value='yprr';
+      state.sortDir='desc'; $('#sortDir').value='desc';
+      state.barN=20; $('#barN').value='20';
+      state.quick={volume:false, deep:false, efficient:false};
+      $$('[data-filter]').forEach(ch=>ch.dataset.active='false');
+      renderAll();
+    });
+
+    // Export CSV
+    $('#exportCsv').addEventListener('click', ()=>{
+      const rows = getRows();
+      const cols = TABLE_COLS;
+      const head = cols.join(',');
+      const csv = rows.map(r=> cols.map(k=>{
+        let v=r[k];
+        if(k==='catchRate'||k==='targetShare') v=(v*100).toFixed(1)+'%';
+        else if(typeof v==='number' && !Number.isInteger(v)) v = String(v);
+        return `"${String(v).replace(/"/g,'""')}"`;
+      }).join(','));
+      const blob = new Blob([head+'\n'+csv.join('\n')], {type:'text/csv;charset=utf-8;'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'wr_analytics.csv';
+      document.body.appendChild(a); a.click(); a.remove();
+    });
+
+    // Quick filter chips
+    $$('[data-filter]').forEach(ch=>{
+      ch.addEventListener('click', ()=> toggleChip(ch));
+      ch.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' ') { e.preventDefault(); toggleChip(ch);} });
+    });
+  }
+
+  function toggleChip(ch){
+    const t = ch.dataset.filter;
+    if(t==='clear'){
+      state.quick={volume:false, deep:false, efficient:false};
+      $$('[data-filter]').forEach(c=>{ if(c.dataset.filter!=='clear') c.dataset.active='false'; });
+    }else{
+      state.quick[t] = !state.quick[t];
+      ch.dataset.active = String(state.quick[t]);
+    }
+    renderAll();
+  }
+
+  // Rows with filters and quick chips
+  function getRows(){
+    const q = state.q;
+    let rows = DATA.filter(r => (!q || r.player.toLowerCase().includes(q)) && r.routes >= state.minRoutes);
+
+    // Quick chips constraints
+    if(state.quick.volume) rows = rows.filter(r=> r.routes >= 300);
+    if(state.quick.deep) rows = rows.filter(r=> r.adot >= 12);
+    if(state.quick.efficient) rows = rows.filter(r=> r.yprr >= 2.5);
+
+    const dir = state.sortDir==='asc'? 1 : -1;
+    const k = state.sortBy;
+    rows.sort((a,b)=>{
+      const va=a[k], vb=b[k];
+      if(va==null && vb==null) return 0;
+      if(va==null) return 1;
+      if(vb==null) return -1;
+      return (va>vb?1:va<vb?-1:0)*dir;
+    });
+    return rows;
+  }
+
+  // KPI
+  function renderKPIs(rows){
+    $('#kpiPlayers').textContent = rows.length;
+    $('#kpiYprr').textContent = rows.length? median(rows.map(r=>r.yprr)).toFixed(2) : '–';
+    $('#kpiEpa').textContent = rows.length? median(rows.map(r=>r.epaPerTarget)).toFixed(2) : '–';
+  }
+
+  // Table
+  function renderTable(rows){
+    // head
+    $('#tblHead').innerHTML = TABLE_COLS.map(k=>{
+      const title = KEY2[k]?.n || k;
+      const cls = k==='player' ? '' : ' class="num"';
+      const clickable = k==='player' ? '' : ' data-k="'+k+'"';
+      return `<th${cls}${clickable} tabindex="0" aria-label="Sort by ${title}">${title}</th>`;
+    }).join('');
+
+    // body
+    $('#tblBody').innerHTML = rows.map(r=>`
+      <tr>
+        ${TABLE_COLS.map(k=>`<td class="${k==='player'?'':'num'}">${fmt(k,r[k])}</td>`).join('')}
+      </tr>
+    `).join('');
+
+    // Empty state
+    $('#emptyState').hidden = rows.length > 0;
+
+    // Click/keyboard sort
+    $$('#tbl thead th[data-k]').forEach(th=>{
+      const sortHandler = ()=>{
+        const k = th.getAttribute('data-k');
+        if(state.sortBy===k){ state.sortDir = state.sortDir==='asc'?'desc':'asc'; }
+        else { state.sortBy=k; state.sortDir='desc'; }
+        $('#sortBy').value = state.sortBy;
+        $('#sortDir').value = state.sortDir;
+        renderAll();
+      };
+      th.addEventListener('click', sortHandler);
+      th.addEventListener('keydown', e=>{ if(e.key==='Enter' || e.key===' ') { e.preventDefault(); sortHandler(); } });
+    });
+
+    // Highlight active sort + aria-sort
+    $$('#tbl thead th').forEach(th=>{
+      th.classList.remove('is-active','asc','desc');
+      if(th.hasAttribute('data-k')) th.setAttribute('aria-sort','none');
+    });
+    const activeTh = $(`#tbl thead th[data-k="${state.sortBy}"]`);
+    if(activeTh){
+      activeTh.classList.add('is-active', state.sortDir);
+      activeTh.setAttribute('aria-sort', state.sortDir==='asc' ? 'ascending' : 'descending');
+    }
+  }
+
+  // SVG helpers
+  function niceMinMax(min, max, pad=0.06){
+    if(!isFinite(min)||!isFinite(max)) return {min:0, max:1};
+    if(min===max){ const m = min||1; return {min: m*(1-pad), max: m*(1+pad)}; }
+    const span = max-min; return {min: min - span*pad, max: max + span*pad};
+  }
+  function scaleLinear(domainMin, domainMax, rangeMin, rangeMax){
+    const d = domainMax - domainMin || 1;
+    const r = rangeMax - rangeMin;
+    return x => rangeMin + ( (x - domainMin) / d ) * r;
+  }
+  function colorScale(val, a, b){
+    if(!isFinite(val)) return '#a8a8a8';
+    const t = (val - a) / ((b - a) || 1);
+    const r = Math.round(196 + (83-196)*t);
+    const g = Math.round(86 + (224-86)*t);
+    const bl= Math.round(86 + (122-86)*t);
+    return `rgb(${r},${g},${bl})`;
+  }
+  function clearSvg(svg){ while(svg.firstChild) svg.removeChild(svg.firstChild); }
+  function make(tag, attrs, parent){
+    const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    if(attrs) for(const k in attrs) el.setAttribute(k, attrs[k]);
+    if(parent) parent.appendChild(el);
+    return el;
+  }
+  const tip = $('#tip');
+  function showTip(html, x, y){ tip.innerHTML = html; tip.style.left = x+'px'; tip.style.top = y+'px'; tip.style.display='block'; }
+  function hideTip(){ tip.style.display='none'; }
+
+  // Scatter
+  function renderScatter(){
+    const svg = $('#scatter'); clearSvg(svg);
+    const rows = getRows();
+    const W = svg.clientWidth || svg.parentElement.clientWidth || 600;
+    const H = svg.clientHeight || 360;
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+
+    const m = {l:64,r:16,t:12,b:42};
+    const plotW = W - m.l - m.r;
+    const plotH = H - m.t - m.b;
+
+    const xVals = rows.map(r=>r.targetShare);
+    const yVals = rows.map(r=>r.yprr);
+    const cVals = rows.map(r=>r.epaPerTarget);
+    const rVals = rows.map(r=>r.targets);
+    const xr = niceMinMax(Math.min(...xVals), Math.max(...xVals));
+    const yr = niceMinMax(Math.min(...yVals), Math.max(...yVals));
+    const cr = niceMinMax(Math.min(...cVals), Math.max(...cVals));
+    const rr = niceMinMax(Math.min(...rVals), Math.max(...rVals));
+
+    const x = scaleLinear(xr.min, xr.max, m.l, m.l+plotW);
+    const y = scaleLinear(yr.max, yr.min, m.t, m.t+plotH);
+    const rad = v => 5 + 12*((v - rr.min) / ((rr.max - rr.min) || 1));
+
+    // axes
+    make('line', {x1:m.l, y1:m.t+plotH, x2:m.l+plotW, y2:m.t+plotH, stroke: 'color-mix(in srgb, var(--text) 18%, transparent)'}, svg);
+    const xticks=5;
+    for(let i=0;i<=xticks;i++){
+      const t = i/xticks, xv = xr.min + (xr.max-xr.min)*t, xs = m.l + plotW*t;
+      make('line', {x1:xs, y1:m.t, x2:xs, y2:m.t+plotH, stroke:'color-mix(in srgb, var(--text) 8%, transparent)'}, svg);
+      const tx = make('text', {x:xs, y:m.t+plotH+16, fill:'color-mix(in srgb, var(--text) 70%, var(--muted))', 'font-size':'11', 'text-anchor':'middle'}, svg);
+      tx.textContent = (xv*100).toFixed(0)+'%';
+    }
+
+    make('line', {x1:m.l, y1:m.t, x2:m.l, y2:m.t+plotH, stroke: 'color-mix(in srgb, var(--text) 18%, transparent)'}, svg);
+    const yticks=5;
+    for(let i=0;i<=yticks;i++){
+      const t = i/yticks, yv = yr.min + (yr.max-yr.min)*t, ys = m.t + plotH - plotH*t;
+      const ty = make('text', {x:m.l-8, y:ys+4, fill:'color-mix(in srgb, var(--text) 70%, var(--muted))', 'font-size':'11', 'text-anchor':'end'}, svg);
+      ty.textContent = yv.toFixed(1);
+    }
+    const lx = make('text', {x:m.l+plotW/2, y:H-6, fill:'color-mix(in srgb, var(--text) 86%, var(--muted))', 'font-size':'12', 'text-anchor':'middle'}, svg);
+    lx.textContent = 'Target Share (%)';
+    const ly = make('text', {x:12, y:m.t+12, fill:'color-mix(in srgb, var(--text) 86%, var(--muted))', 'font-size':'12'}, svg);
+    ly.textContent = 'YPRR';
+
+    // points
+    rows.forEach(r=>{
+      const cx = x(r.targetShare), cy = y(r.yprr);
+      const c = colorScale(r.epaPerTarget, cr.min, cr.max);
+      const rradius = rad(r.targets);
+      const g = make('g', {'data-player':r.player}, svg);
+      const circle = make('circle', {cx, cy, r:rradius, fill:c, stroke:'rgba(255,255,255,0.28)'}, g);
+      circle.setAttribute('tabindex','0');
+      circle.setAttribute('role','img');
+      circle.setAttribute('aria-label', `${r.player}, YPRR ${r.yprr.toFixed(2)}, Target Share ${(r.targetShare*100).toFixed(1)}%, EPA/Target ${r.epaPerTarget.toFixed(2)}, Targets ${r.targets}`);
+
+      const labelNeeded = r.yprr >= (yr.max - (yr.max-yr.min)*0.15) || r.targetShare >= (xr.max - (xr.max-xr.min)*0.1);
+      if(labelNeeded){
+        const t = make('text', {x: cx+rradius+4, y: cy-rradius-2, fill:'color-mix(in srgb, var(--text) 80%, var(--muted))', 'font-size': '11'}, g);
+        t.textContent = r.player.split(' ')[0];
+      }
+
+      function tipHTML(){
+        return `<b>${r.player}</b><br>
+          YPRR: ${r.yprr.toFixed(2)}<br>
+          Target Share: ${(r.targetShare*100).toFixed(1)}%<br>
+          EPA/Target: ${r.epaPerTarget.toFixed(2)}<br>
+          Targets: ${r.targets}`;
+      }
+      g.addEventListener('mousemove', (e)=> showTip(tipHTML(), e.clientX, e.clientY));
+      g.addEventListener('mouseleave', hideTip);
+      circle.addEventListener('focus', (e)=> showTip(tipHTML(), (window.innerWidth/2), (svg.getBoundingClientRect().top + cy)));
+      circle.addEventListener('blur', hideTip);
+    });
+
+    renderKPIs(rows);
+  }
+
+  // Bar chart
+  function renderBar(){
+    const svg = $('#bar'); clearSvg(svg);
+    const rows = getRows().slice().sort((a,b)=> b.yprr - a.yprr).slice(0, +$('#barN').value);
+    const W = svg.clientWidth || svg.parentElement.clientWidth || 600;
+    const H = svg.clientHeight || 360;
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+
+    // gradient defs (scoped to this svg)
+    const defs = make('defs', {}, svg);
+    const grad = make('linearGradient', {id:'barGradient', x1:'0%', y1:'0%', x2:'100%', y2:'0%'}, defs);
+    make('stop', {offset:'0%', 'stop-color':'#7f5cff'}, grad);
+    make('stop', {offset:'100%', 'stop-color':'#22d3ee'}, grad);
+
+    const m = {l:140,r:16,t:10,b:26};
+    const plotW = W - m.l - m.r;
+    const rowH = 10; // Fixed height for consistent spacing 
+    const yGap = 6;
+    const innerH = rows.length*rowH + (rows.length-1)*yGap;
+    const yTop = m.t + Math.max(0, (H - m.t - m.b - innerH)/2);
+    const maxVal = Math.max(1, ...rows.map(r=>r.yprr));
+    const x = scaleLinear(0, maxVal, m.l, m.l + plotW);
+
+    // x axis
+    make('line', {x1:m.l, y1:H-m.b, x2:m.l+plotW, y2:H-m.b, stroke:'color-mix(in srgb, var(--text) 18%, transparent)'}, svg);
+    for(let i=0;i<=5;i++){
+      const v = (maxVal/5)*i, xs = x(v);
+      make('line', {x1:xs, y1:H-m.b, x2:xs, y2:H-m.b+4, stroke:'color-mix(in srgb, var(--text) 18%, transparent)'}, svg);
+      const tx = make('text', {x:xs, y:H-m.b+16, fill:'color-mix(in srgb, var(--text) 70%, var(--muted))', 'font-size':'11', 'text-anchor':'middle'}, svg);
+      tx.textContent = v.toFixed(1);
+    }
+
+    rows.forEach((r, i)=>{
+      const y = yTop + i*(rowH+yGap);
+      const barW = x(r.yprr) - m.l;
+      const rect = make('rect', {x:m.l, y:y, width:Math.max(1, barW), height:rowH, rx:6, fill:'url(#barGradient)', stroke:'rgba(255,255,255,0.25)'}, svg);
+
+      const name = make('text', {x:m.l - 8, y: y + rowH*0.66, fill:'color-mix(in srgb, var(--text) 90%, var(--muted))', 'font-size':'12', 'text-anchor':'end'}, svg);
+      name.textContent = r.player;
+
+      const val = make('text', {x:m.l + barW + 6, y: y + rowH*0.66, fill:'color-mix(in srgb, var(--text) 86%, var(--muted))', 'font-size':'12'}, svg);
+      val.textContent = r.yprr.toFixed(2);
+
+      rect.setAttribute('tabindex','0');
+      rect.setAttribute('role','img');
+      rect.setAttribute('aria-label', `${r.player} YPRR ${r.yprr.toFixed(2)}`);
+
+      const tipText = `<b>${r.player}</b><br>YPRR: ${r.yprr.toFixed(2)}`;
+      rect.addEventListener('mousemove', (e)=> showTip(tipText, e.clientX, e.clientY));
+      rect.addEventListener('mouseleave', hideTip);
+      rect.addEventListener('focus', ()=> showTip(tipText, (m.l + barW), (svg.getBoundingClientRect().top + y)));
+      rect.addEventListener('blur', hideTip);
+    });
+  }
+
+  // Render all
+  function renderAll(){
+    const rows = getRows();
+    renderTable(rows);
+    renderScatter();
+    renderBar();
+  }
+
+  // Init
+  function init(){
+    initControls();
+    renderAll();
+    // reflow charts on resize
+    window.addEventListener('resize', debounced(()=>{ renderScatter(); renderBar(); }, 100));
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+
+})();
+</script>
+</body>
+</html>
