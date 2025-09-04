@@ -84,15 +84,21 @@
 
   /* Table */
   .tableWrap{overflow:auto; border:1px solid var(--border); border-radius:12px; max-height:58vh}
-  table{width:100%; border-collapse:separate; border-spacing:0; min-width:760px}
-  thead th{
-    position:sticky; top:0; background:linear-gradient(180deg, color-mix(in oklab, var(--card) 92%, var(--bg) 8%), var(--card));
-    border-bottom:1px solid var(--border); padding:10px 8px; color:color-mix(in srgb, var(--text) 86%, var(--muted) 14%); font-weight:800; font-size:12px; cursor:pointer; white-space:nowrap;
-    z-index:1
-  }
-  thead th.is-active {background: color-mix(in srgb, var(--accent) 14%, var(--card) 86%);}
-  thead th.is-active.asc::after {content:" ▲";}
-  thead th.is-active.desc::after {content:" ▼";}
+table{width:100%; border-collapse:separate; border-spacing:0; min-width:760px}
+thead th{
+  position:sticky; top:0; background:linear-gradient(180deg, color-mix(in oklab, var(--card) 92%, var(--bg) 8%), var(--card));
+  border-bottom:1px solid var(--border); padding:10px 8px; color:color-mix(in srgb, var(--text) 86%, var(--muted) 14%); font-weight:800; font-size:12px; cursor:pointer; white-space:nowrap;
+  z-index:1
+}
+thead th.is-active {
+  background: color-mix(in srgb, var(--accent) 14%, var(--card) 86%);
+}
+thead th.is-active.asc::after {
+  content:" ▲";
+}
+thead th.is-active.desc::after {
+  content:" ▼";
+}
   tbody td{padding:10px 8px; border-bottom:1px dashed var(--grid); font-variant-numeric:tabular-nums}
   tbody tr:hover{background:color-mix(in srgb, var(--card) 86%, var(--accent) 14%)}
   .num{text-align:right}
@@ -305,7 +311,7 @@
     quick:{volume:false, deep:false, efficient:false}
   };
 
-  // DOM helpers
+  // DOM
   const $ = s => document.querySelector(s);
   const $$ = s => Array.from(document.querySelectorAll(s));
   function median(arr){ if(!arr.length) return 0; const s=[...arr].sort((a,b)=>a-b); const m=s.length>>1; return s.length%2? s[m] : (s[m-1]+s[m])/2; }
@@ -422,7 +428,6 @@
 
   // Table
   function renderTable(rows){
-    // head
     $('#tblHead').innerHTML = TABLE_COLS.map(k=>{
       const title = KEY2[k]?.n || k;
       const cls = k==='player' ? '' : ' class="num"';
@@ -430,7 +435,6 @@
       return `<th${cls}${clickable} tabindex="0" aria-label="Sort by ${title}">${title}</th>`;
     }).join('');
 
-    // body
     $('#tblBody').innerHTML = rows.map(r=>`
       <tr>
         ${TABLE_COLS.map(k=>`<td class="${k==='player'?'':'num'}">${fmt(k,r[k])}</td>`).join('')}
@@ -453,17 +457,16 @@
       th.addEventListener('click', sortHandler);
       th.addEventListener('keydown', e=>{ if(e.key==='Enter' || e.key===' ') { e.preventDefault(); sortHandler(); } });
     });
-
     // Highlight active sort + aria-sort
-    $$('#tbl thead th').forEach(th=>{
-      th.classList.remove('is-active','asc','desc');
-      if(th.hasAttribute('data-k')) th.setAttribute('aria-sort','none');
-    });
-    const activeTh = $(`#tbl thead th[data-k="${state.sortBy}"]`);
-    if(activeTh){
-      activeTh.classList.add('is-active', state.sortDir);
-      activeTh.setAttribute('aria-sort', state.sortDir==='asc' ? 'ascending' : 'descending');
-    }
+$$('#tbl thead th').forEach(th=>{
+  th.classList.remove('is-active','asc','desc');
+  if(th.hasAttribute('data-k')) th.setAttribute('aria-sort','none');
+});
+const activeTh = $(`#tbl thead th[data-k="${state.sortBy}"]`);
+if(activeTh){
+  activeTh.classList.add('is-active', state.sortDir);
+  activeTh.setAttribute('aria-sort', state.sortDir==='asc' ? 'ascending' : 'descending');
+}
   }
 
   // SVG helpers
@@ -543,6 +546,7 @@
     const ly = make('text', {x:12, y:m.t+12, fill:'color-mix(in srgb, var(--text) 86%, var(--muted))', 'font-size':'12'}, svg);
     ly.textContent = 'YPRR';
 
+
     // points
     rows.forEach(r=>{
       const cx = x(r.targetShare), cy = y(r.yprr);
@@ -584,20 +588,15 @@
     const H = svg.clientHeight || 360;
     svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
 
-    // gradient defs (scoped to this svg)
-    const defs = make('defs', {}, svg);
-    const grad = make('linearGradient', {id:'barGradient', x1:'0%', y1:'0%', x2:'100%', y2:'0%'}, defs);
-    make('stop', {offset:'0%', 'stop-color':'#7f5cff'}, grad);
-    make('stop', {offset:'100%', 'stop-color':'#22d3ee'}, grad);
-
     const m = {l:140,r:16,t:10,b:26};
     const plotW = W - m.l - m.r;
-    const rowH = 10; // Fixed height for consistent spacing 
+   const rowH = 10; // Fixed height for consistent spacing 
     const yGap = 6;
     const innerH = rows.length*rowH + (rows.length-1)*yGap;
     const yTop = m.t + Math.max(0, (H - m.t - m.b - innerH)/2);
     const maxVal = Math.max(1, ...rows.map(r=>r.yprr));
     const x = scaleLinear(0, maxVal, m.l, m.l + plotW);
+
 
     // x axis
     make('line', {x1:m.l, y1:H-m.b, x2:m.l+plotW, y2:H-m.b, stroke:'color-mix(in srgb, var(--text) 18%, transparent)'}, svg);
@@ -606,12 +605,14 @@
       make('line', {x1:xs, y1:H-m.b, x2:xs, y2:H-m.b+4, stroke:'color-mix(in srgb, var(--text) 18%, transparent)'}, svg);
       const tx = make('text', {x:xs, y:H-m.b+16, fill:'color-mix(in srgb, var(--text) 70%, var(--muted))', 'font-size':'11', 'text-anchor':'middle'}, svg);
       tx.textContent = v.toFixed(1);
+      
     }
 
     rows.forEach((r, i)=>{
       const y = yTop + i*(rowH+yGap);
       const barW = x(r.yprr) - m.l;
-      const rect = make('rect', {x:m.l, y:y, width:Math.max(1, barW), height:rowH, rx:6, fill:'url(#barGradient)', stroke:'rgba(255,255,255,0.25)'}, svg);
+     const color = 'url(#barGradient)';
+      const rect = make('rect', {x:m.l, y:y, width:Math.max(1, barW), height:rowH, rx:6, fill:color, stroke:'rgba(255,255,255,0.25)'}, svg);
 
       const name = make('text', {x:m.l - 8, y: y + rowH*0.66, fill:'color-mix(in srgb, var(--text) 90%, var(--muted))', 'font-size':'12', 'text-anchor':'end'}, svg);
       name.textContent = r.player;
@@ -649,7 +650,7 @@
 
   document.addEventListener('DOMContentLoaded', init);
 
-})();
-</script>
+})();</script>
 </body>
 </html>
+
